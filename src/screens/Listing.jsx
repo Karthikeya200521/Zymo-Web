@@ -165,6 +165,7 @@ const Listing = ({ title }) => {
     const carsGroupedByNormalizedName = carsArray.reduce((acc, car) => {
       if (car.brand === "Karyana") console.log(car);
       if (!car || !car.name || typeof car.fare !== 'string') {
+        console.log("Invalid car data:", car); // For debugging
         return acc;
       }
 
@@ -721,7 +722,7 @@ const Listing = ({ title }) => {
         ) : filteredList.length === 0 ? (
           <div className="text-center text-white mt-10">
             {filtersApplied ? (
-              <p className="text-lg">No cars available for the specified filters. Try searching others.</p>
+              <p className="text-lg">No cars available for the specified filters. Try searching other filters or press the refresh button 🔄.</p>
             ) : (
               <p className="text-lg">Please apply filters or check availability later.</p>
             )}
@@ -930,7 +931,8 @@ const Listing = ({ title }) => {
                                     goToDetails(individualCar);
                                   } else if (activeTab === "subscribe") {
                                     goToDetails(individualCar);
-                                  } else if (individualCar.source === "Karyana") {
+                                  } else if (individualCar.source === "Karyana" || individualCar.source === "ZT") {
+                                    console.log("Karyana car selected:", individualCar);
                                     goToPackages(car); // Show packages for Karyana cars with multiple packages
                                   } else {
                                     goToPackages(individualCar);
