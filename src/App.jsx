@@ -43,6 +43,11 @@ import { Navigate } from "react-router-dom";
 import CookiesConsent from "./components/CookiesConsent.jsx";
 import AgentList from "./components/AgentList.jsx";
 import ChatBotModal from "./components/Chatbot/ChatBotModal.jsx";
+import AddVoucher from "./components/AddVoucher.jsx";
+import CareerLogin from "./pages/careerLogin.jsx";
+import HRLogin from "./pages/HRloginPage.jsx";
+import CareerAgentList from "./pages/CareerAgentList.jsx";
+import VoucherDisplay from "./components/YourVouchers.jsx";
 const App = () => {
   return (
     <HelmetProvider>
@@ -55,7 +60,7 @@ const App = () => {
             path="/"
             element={
               <HomeScreen
-                title="Affordable Self-Drive Car Rentals | Compare, Save, and Book with Zymo"
+                title="Self Drive Car Hire India – Compare Deals, Lowest Price"
                 canonical="/"
               />
             }
@@ -95,7 +100,7 @@ const App = () => {
             }
           />
           <Route
-            path="/buy"
+            path="/buy-car"
             element={<NearestCar title="Find Your Car - Zymo" />}
           />
           <Route
@@ -103,39 +108,39 @@ const App = () => {
             element={<TestDrivePopup title="Test Drive - Zymo" />}
           />
           <Route
-            path="/buy/car-details/:id"
+            path="/buy-car/car-details/:id"
             element={<CarDetails title="Car Details - Zymo" />}
           />
           <Route
-            path="/buy/summary/:id"
+            path="/buy-car/summary/:id"
             element={
               <ExtendedTestDriveSummary title="Test Drive Summary - Zymo" />
             }
           />
           <Route
-            path="/buy/date-picker"
+            path="/buy-car/date-picker"
             element={
               <ExtendedTestDriveDatePicker title="Pick a Date - Test Drive" />
             }
           />
           <Route
-            path="/buy/upload-info"
+            path="/buy-car/upload-info"
             element={
               <ExtendedTestDriveFormPage title="Enter Your Info - Test Drive" />
             }
           />
           <Route
-            path="/buy/upload-doc"
+            path="/buy-car/upload-doc"
             element={
               <ExtendedTestDriveUploadDocuments title="Upload Documents - Test Drive" />
             }
           />
           <Route
-            path="/buy/test-drive-inputform"
+            path="/buy-car/test-drive-inputform"
             element={<TestDriveInputForm title="Schedule Test Drive - Zymo" />}
           />
           <Route
-            path="/buy/test-drive-confirmpage"
+            path="/buy-car/test-drive-confirmpage"
             element={<TestDriveConfirmPage title="Confirm Test Drive - Zymo" />}
           />
           <Route
@@ -151,7 +156,19 @@ const App = () => {
             element={<CareerForm title="Careers at Zymo" />}
           />
           <Route
-            path="/careerpanel"
+            path="/career-login"
+            element={<CareerLogin title="Careers at Zymo" />}
+          />
+          <Route
+            path="/career-login/career-panel/HR-login"
+            element={<HRLogin title="Careers at Zymo" />}
+          />
+          <Route
+            path="/career-login/career-panel/HR-login/CareerAgent-list"
+            element={<CareerAgentList title="Careers at Zymo" />}
+          />
+          <Route
+            path="/career-login/career-panel"
             element={<CareerPanel title="Careers at Zymo" />}
           />
           <Route
@@ -197,6 +214,10 @@ const App = () => {
             element={<YourDetails title="Your Details - Zymo" />}
           />
           <Route
+            path="/your-vouchers"
+            element={<VoucherDisplay title="Your Details - Zymo" />}
+          />
+          <Route
             path="/agent-login"
             element={<Agent title="Agent Login - Zymo" />}
           />
@@ -207,6 +228,10 @@ const App = () => {
           <Route
             path="/master-agent"
             element={<MasterAgentLogin title="Master Agent Login - Zymo" />}
+          />
+           <Route
+            path="/add-voucher"
+            element={<AddVoucher title="add voucher - Zymo" />}
           />
           <Route
             path="/agent-list"

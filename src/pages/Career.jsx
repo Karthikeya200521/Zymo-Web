@@ -19,13 +19,15 @@ const CareerForm = ({ title }) => {
     skillsDescription: "",
     resume: null,
     expectedStipend: "",
-    stipendAmountOption: "",
-    stipendAmountCustom: "",
+    experience: "",
+    stipendAmount: "",
     applyFor: "",
   });
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+
+  const API_URL = import.meta.env.VITE_FUNCTIONS_API_URL;
 
   // Set document title
   useEffect(() => {
@@ -146,15 +148,31 @@ const CareerForm = ({ title }) => {
         applyFor: formData.applyFor,
         ...(formData.expectedStipend === "Paid" && {
           experience: formData.experience,
-          stipendAmount:
-            formData.stipendAmountOption === "Other"
-              ? formData.stipendAmountCustom
-              : formData.stipendAmountOption,
+          stipendAmount: formData.stipendAmount,
         }),
       };
 
       // Submit to Firestore
       await addDoc(collection(webDB, "careerApplications"), applicationData);
+      
+        try {
+        const response = await fetch(`${API_URL}/email/sendEmailOnFormSubmit`, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+      body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+      throw new Error('Failed to submit application');
+      }
+
+      console.log('Application submitted successfully');
+      } catch (error) {
+      console.error('Error submitting application:', error);
+      throw error;
+    }
 
       // Reset form after successful submission
       setFormData({
@@ -167,8 +185,8 @@ const CareerForm = ({ title }) => {
         skillsDescription: "",
         resume: null,
         expectedStipend: "",
-        stipendAmountOption: "",
-        stipendAmountCustom: "",
+        experience: "",
+        stipendAmount: "",
         applyFor: "",
       });
       localStorage.setItem("careerFormSubmittedEmail", formData.email);
@@ -362,32 +380,17 @@ const CareerForm = ({ title }) => {
                     <option value="6+ months">6+ months</option>
                   </select>
                   <label className="block font-semibold text-gray-100 mb-2">
-                    Expected Amount
+                    Expected Stipend Amount
                   </label>
-                  <select
-                    name="stipendAmountOption"
-                    value={formData.stipendAmountOption}
+                  <input
+                    type="text"
+                    name="stipendAmount"
+                    value={formData.stipendAmount}
                     onChange={handleChange}
+                    placeholder="Enter Expected Amount"
                     className="w-full p-3 mb-4 bg-gray-200 rounded-lg"
                     required
-                  >
-                    <option value="">Select Amount</option>
-                    <option value="2000">2000</option>
-                    <option value="5000">5000</option>
-                    <option value="10000">10,000</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  {formData.stipendAmountOption === "Other" && (
-                    <input
-                      type="text"
-                      name="stipendAmountCustom"
-                      value={formData.stipendAmountCustom}
-                      onChange={handleChange}
-                      placeholder="Enter Custom Amount"
-                      className="w-full p-3 mb-4 bg-gray-200 rounded-lg"
-                      required
-                    />
-                  )}
+                  />
                 </>
               )}
               <button

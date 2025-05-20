@@ -2,6 +2,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { appDB } from "../firebase";
 import fetchAllTestCollections from "../testCarFetcher";
 import fetchAllTestKosCollections from "./fetchtestkoscar";
+import fetchAllTestZtCollections from "./testZtCarFetcher";
 import { formatFare, toPascalCase } from "../helperFunctions";
 
 export const fetchFirebaseCars = async (city, tripDurationHours) => {
@@ -18,11 +19,14 @@ export const fetchFirebaseCars = async (city, tripDurationHours) => {
           Array.isArray(partner.cities) &&
           partner.cities.some(
             (c) => c && city && c.toLowerCase() === city.toLowerCase()
-          )
+          ) &&
+          partner.visibility
         );
       })
       .map((doc) => {
         const data = doc.data();
+        
+        console.log("Partner data:", data);
         return {
           id: doc.id,
           accountType: data.accountType || "company",
@@ -64,14 +68,20 @@ export const fetchFirebaseCars = async (city, tripDurationHours) => {
 
           const partnerCars = carsSnapshot.docs.map((doc) => {
             const carData = doc.data();
-
+            console.log("Car data:", carData, "source: ", partner.brandName);
             // minimum booking duration for car
 
             const minBookingDuration = carData.minBookingDuration;
 
             if (minBookingDuration === 1 && tripDurationHours < 24) {
+              console.log(
+                `Car ${carData.carName} has a minimum booking duration of 1 day.`
+              );
               return null;
             } else if (minBookingDuration > tripDurationHours) {
+              console.log(
+                `Car ${carData.carName} has a minimum booking duration of ${minBookingDuration} hours.`
+              );
               return null;
             }
 
@@ -85,17 +95,19 @@ export const fetchFirebaseCars = async (city, tripDurationHours) => {
             const all_fares = [];
             const total_km = [];
             const hourlyRates = [];
-            if (carData.packages) {
-              for (const key in carData.packages) {
-                const packageHourlyRate = carData.packages[key].hourlyRate || 0;
-                const kmPerHour = carData.packages[key].kmPerHour || 0;
+            if (carData.packages || carData.hourlyRental.limited.packages) {
+              const packageList = carData.packages || carData.hourlyRental.limited.packages;
+              for (const key in packageList) {
+                const packageHourlyRate = packageList[key].hourlyRate || 0;
+                const kmPerHour = packageList[key].kmPerHour || 0;
                 const fairPrice = packageHourlyRate * tripDurationHours;
                 const fare = formatFare(fairPrice);
                 all_fares.push(fare);
-                total_km.push(kmPerHour * tripDurationHours);
+                total_km.push((kmPerHour * tripDurationHours).toFixed(1));
                 hourlyRates.push(packageHourlyRate);
               }
             }
+            console.log("car data after fair: ", carData);
             return {
               id: doc.id,
               partnerId: partner.id,
@@ -134,7 +146,7 @@ export const fetchFirebaseCars = async (city, tripDurationHours) => {
       }
     }
 
-    // Step 4: Fetch cars from all test collections
+    // Step 4: Fetch cars from all test collections Karyana cars
     const testCollections = await fetchAllTestCollections(
       appDB,
       formatFare,
@@ -162,11 +174,28 @@ export const fetchFirebaseCars = async (city, tripDurationHours) => {
     } else {
       console.log(`No testKos collection cars found for ${city}`);
     }
+    // Step 4.5: Fetch cars from testKos collections
+    const testZtCollections = await fetchAllTestZtCollections(
+      appDB,
+      formatFare,
+      city,
+      tripDurationHours
+    );
+    
+
+    if (testZtCollections && testZtCollections.length > 0) {
+      console.log(`Found ${testZtCollections.length} testZt collection cars for ${city}`);
+      allCars = [...allCars, ...testZtCollections];
+      console.log("All cars from testZt collections:", testZtCollections);
+    } else {
+      console.log(`No testZt collection cars found for ${city}`);
+    }
     // Step 5: Map car data to the expected format
     const filterdData = allCars
       .filter((car) => {
         // Skip cars with no data or undefined required fields
         if (!car || !car.id) {
+          console.log("Skipping car with no ID or data:", car);
           return false;
         }
         return true;
@@ -215,8 +244,9 @@ export const fetchFirebaseCars = async (city, tripDurationHours) => {
           variations: car.variations || [],
         };
       });
-
+    console.log("Filtered data:", filterdData);
     return filterdData;
+    
     // return [];
   } catch (error) {
     console.error("Error fetching Firebase cars:", error);
